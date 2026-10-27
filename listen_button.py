@@ -2,7 +2,7 @@ import serial
 import serial.tools.list_ports
 import time
 import sys
-from pynput.keyboard import Controller
+from pynput.keyboard import Key,Controller
 
 # --- Configuration ---
 BAUD_RATE = 9600
@@ -40,9 +40,9 @@ def select_port():
 
 def select_key():
     """Prompts the user to select the key to be pressed."""
-    key = input("\nEnter the key to simulate (default 'k'): ").strip()
+    key = input("\nEnter the key to simulate (default '1'), it will be sent as Alt+'key': ").strip()
     if not key:
-        return 'k'
+        return '1'
     return key[0] # Take only the first character if they type more
 
 def main():
@@ -53,7 +53,7 @@ def main():
     
     print(f"\nConfiguration complete:")
     print(f"- Port: {selected_device}")
-    print(f"- Key to send: '{target_key}'")
+    print(f"- Key to send: Alt+'{target_key}'")
     
     try:
         # 2. Initialize Serial Connection
@@ -69,12 +69,15 @@ def main():
                 try:
                     line = ser.readline().decode('utf-8', errors='ignore').strip()
                     if line == "BUTTON_PRESSED":
-                        print(f"[{time.strftime('%H:%M:%S')}] Button pressed! Sending '{target_key}'...")
+                        print(f"[{time.strftime('%H:%M:%S')}] Button pressed! Sending Alt+{target_key}...")
                         
                         # Simulate key press and release
+                        keyboard.press(Key.alt)
                         keyboard.press(target_key)
+                        time.sleep(0.05)  # Short delay to ensure the key press is registered
+                        keyboard.release(Key.alt)
                         keyboard.release(target_key)
-                        
+
                 except Exception as e:
                     print(f"Read/Key Error: {e}")
             
